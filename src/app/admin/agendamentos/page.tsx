@@ -3,6 +3,8 @@ import { redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import AppointmentActions from "./appointment-actions";
 
+export const instant = false;
+
 type AppointmentView = {id:string;starts_at:string;status:string;patients:{full_name:string;phone:string;email:string}|null;professionals:{display_name:string}|null;services:{name:string}|null};
 export default async function AppointmentsPage(){
  const supabase=await createSupabaseServerClient();if(!supabase)return <main className="admin-shell"><h1>Configure o Supabase</h1><p>Siga SUPABASE-SETUP.md para ativar a agenda.</p></main>;

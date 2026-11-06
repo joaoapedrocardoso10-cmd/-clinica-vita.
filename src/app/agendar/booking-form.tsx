@@ -200,7 +200,7 @@ export default function BookingForm() {
     <div className="date-picker">
       <div className="date-picker-heading"><div><span className="booking-field-title">Escolha o dia</span><small>Role para ver todas as datas do mês</small></div><label className="date-input-wrap" htmlFor="date"><span>Outra data</span><input id="date" type="date" min={today || undefined} value={date} onChange={(e) => chooseDate(e.target.value)} aria-label="Escolher outra data" required/></label></div>
       <div className="month-navigation">
-        <button type="button" onClick={() => moveMonth(-1)} disabled={!viewingMonth || (today && viewingMonth <= today.slice(0, 7))} aria-label="Mês anterior">‹</button>
+        <button type="button" onClick={() => moveMonth(-1)} disabled={!viewingMonth || Boolean(today && viewingMonth <= today.slice(0, 7))} aria-label="Mês anterior">‹</button>
         <b>{selectedMonth ? new Intl.DateTimeFormat("pt-BR", { month: "long", year: "numeric" }).format(selectedMonth).replace(/^./, (letter) => letter.toLocaleUpperCase("pt-BR")) : "Carregando calendário…"}</b>
         <button type="button" onClick={() => moveMonth(1)} disabled={!viewingMonth} aria-label="Próximo mês">›</button>
       </div>

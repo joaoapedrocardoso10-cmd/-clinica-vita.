@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
+export const instant = false;
 
 type AppointmentView = { id:string; starts_at:string; status:string; patients:{full_name:string;phone:string}|null; professionals:{display_name:string}|null; services:{name:string}|null };
 
