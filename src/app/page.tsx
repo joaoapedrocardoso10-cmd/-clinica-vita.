@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { clinicWhatsAppDisplay, clinicWhatsAppUrl } from "@/lib/clinic-contact";
+import WhatsAppFloat from "@/components/whatsapp-float";
 
 const specialties = [
   { icon: "✳", name: "Clínica geral", detail: "Cuidado próximo em todas as fases da vida." },
@@ -22,7 +24,7 @@ export default function Home() {
   const [sending, setSending] = useState(false);
   const [form, setForm] = useState({ name: "", email: "", message: "" });
   const mapsUrl = "https://maps.google.com/?q=Av.+Paulista,+1000,+S%C3%A3o+Paulo";
-  const whatsappUrl = "https://wa.me/5511999999999?text=Ol%C3%A1%2C%20gostaria%20de%20mais%20informa%C3%A7%C3%B5es%20sobre%20a%20Cl%C3%ADnica%20Vita.";
+  const whatsappUrl = clinicWhatsAppUrl("Olá, gostaria de mais informações sobre a Clínica Vita.");
   const year = 2026;
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -68,12 +70,12 @@ export default function Home() {
         <button className="menu-toggle" aria-label={menuOpen ? "Fechar menu" : "Abrir menu"} aria-expanded={menuOpen} onClick={() => setMenuOpen(!menuOpen)}>{menuOpen ? "×" : "☰"}</button>
         <nav className={menuOpen ? "nav nav-open" : "nav"} aria-label="Navegação principal">
           <a href="#sobre" onClick={() => setMenuOpen(false)}>A clínica</a><a href="#especialidades" onClick={() => setMenuOpen(false)}>Especialidades</a><a href="#equipe" onClick={() => setMenuOpen(false)}>Profissionais</a><a href="#contato" onClick={() => setMenuOpen(false)}>Contato</a>
-          <a className="button button-small" href="#contato" onClick={() => setMenuOpen(false)}>Agendar consulta <span>↗</span></a>
+          <a className="button button-small" href="/agendar" onClick={() => setMenuOpen(false)}>Agendar consulta <span>↗</span></a>
         </nav>
       </header>
 
       <section className="hero" id="inicio">
-        <div className="hero-copy"><div className="eyebrow"><span className="eyebrow-line"/> CUIDADO FEITO PARA VOCÊ</div><h1>Saúde é se sentir <em>bem cuidado.</em></h1><p>Uma clínica completa, com profissionais que escutam, acolhem e acompanham você em cada etapa.</p><div className="hero-actions"><a className="button" href="#contato">Agende sua consulta <span>↗</span></a><a className="text-link" href="#especialidades">Conheça a clínica <span>↓</span></a></div><div className="hero-note"><span className="avatar-stack"><i>H</i><i>R</i><i>C</i></span><span><b>Atendimento próximo</b><small>Uma equipe ao seu lado.</small></span></div></div>
+        <div className="hero-copy"><div className="eyebrow"><span className="eyebrow-line"/> CUIDADO FEITO PARA VOCÊ</div><h1>Saúde é se sentir <em>bem cuidado.</em></h1><p>Uma clínica completa, com profissionais que escutam, acolhem e acompanham você em cada etapa.</p><div className="hero-actions"><a className="button" href="/agendar">Agende sua consulta <span>↗</span></a><a className="text-link" href="#especialidades">Conheça a clínica <span>↓</span></a></div><div className="hero-note"><span className="avatar-stack"><i>H</i><i>R</i><i>C</i></span><span><b>Atendimento próximo</b><small>Uma equipe ao seu lado.</small></span></div></div>
         <div className="hero-visual"><div className="hero-image" role="img" aria-label="Profissional de saúde acolhendo uma paciente"/><div className="image-tint"/><div className="hero-card"><div className="card-icon">✳</div><div><b>Seu cuidado, por inteiro.</b><small>Medicina com atenção e propósito.</small></div><span className="card-arrow">↗</span></div><div className="hero-stamp"><span>V</span><small>CLÍNICA<br/>VITA</small></div></div>
         <div className="hero-bottom"><span>01 — 04</span><span className="bottom-line"/><span>UM NOVO JEITO DE CUIDAR</span><a href="#sobre" aria-label="Rolar para conhecer a clínica">↓</a></div>
       </section>
@@ -90,13 +92,13 @@ export default function Home() {
 
       <section className="cta-band"><div className="cta-symbol">✳</div><div><div className="section-kicker">SEU PRÓXIMO PASSO</div><h2>Vamos cuidar de você?</h2><p>Estamos aqui para ajudar você a encontrar o melhor caminho.</p></div><a className="button button-light" href="#contato">Fale com nossa equipe <span>↗</span></a></section>
 
-      <section className="section contact" id="contato"><div className="contact-info"><div className="section-kicker">04 / FALE COM A GENTE</div><h2>Estamos por<br/><em>aqui.</em></h2><p>Tem alguma dúvida ou quer saber mais? Nossa equipe está pronta para ajudar.</p><a className="contact-method" href={whatsappUrl} target="_blank" rel="noreferrer"><span className="method-icon">↗</span><span><small>WHATSAPP</small><b>(11) 99999-9999</b></span><span className="method-arrow">↗</span></a><a className="contact-method" href="mailto:oi@clinicavita.com.br"><span className="method-icon">@</span><span><small>E-MAIL</small><b>oi@clinicavita.com.br</b></span><span className="method-arrow">↗</span></a><div className="address"><span className="method-icon">⌖</span><span><small>ENDEREÇO</small><b>Av. Paulista, 1000 — Bela Vista</b><small>São Paulo — SP, 01310-100</small><a href={mapsUrl} target="_blank" rel="noreferrer">Como chegar ↗</a></span></div><div className="hours"><span>HORÁRIOS</span><b>Seg a Sex, 8h às 18h <i>•</i> Sáb, 8h às 12h</b></div></div>
+      <section className="section contact" id="contato"><div className="contact-info"><div className="section-kicker">04 / FALE COM A GENTE</div><h2>Estamos por<br/><em>aqui.</em></h2><p>Tem alguma dúvida ou quer saber mais? Nossa equipe está pronta para ajudar.</p><a className="contact-method" href={whatsappUrl} target="_blank" rel="noreferrer"><span className="method-icon">↗</span><span><small>WHATSAPP</small><b>{clinicWhatsAppDisplay}</b></span><span className="method-arrow">↗</span></a><a className="contact-method" href="mailto:oi@clinicavita.com.br"><span className="method-icon">@</span><span><small>E-MAIL</small><b>oi@clinicavita.com.br</b></span><span className="method-arrow">↗</span></a><div className="address"><span className="method-icon">⌖</span><span><small>ENDEREÇO</small><b>Av. Paulista, 1000 — Bela Vista</b><small>São Paulo — SP, 01310-100</small><a href={mapsUrl} target="_blank" rel="noreferrer">Como chegar ↗</a></span></div><div className="hours"><span>HORÁRIOS</span><b>Seg a Sex, 8h às 18h <i>•</i> Sáb, 8h às 12h</b></div></div>
         <form className="contact-form" onSubmit={handleSubmit} noValidate><div className="form-kicker">ENVIE UMA MENSAGEM</div><h3>Como podemos ajudar?</h3><p>Preencha os campos e nossa equipe entrará em contato.</p><label htmlFor="name">Seu nome</label><input id="name" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} placeholder="Como podemos chamar você?" autoComplete="name" required/><label htmlFor="email">Seu e-mail</label><input id="email" type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} placeholder="voce@email.com" autoComplete="email" required/><label htmlFor="message">Sua mensagem</label><textarea id="message" rows={3} value={form.message} onChange={e => setForm({ ...form, message: e.target.value })} placeholder="Conte um pouco sobre o que precisa..." required/><button type="submit" className="button form-submit" disabled={sending}>{sending ? "Enviando…" : "Enviar mensagem"} <span>{sending ? "…" : "↗"}</span></button>{formError && <p className={submitted ? "form-feedback success" : "form-feedback"} role="status">{formError}</p>}<small className="form-privacy">Seus dados são enviados somente para responder à sua solicitação.</small></form>
       </section>
       <section className="map-section"><iframe title="Mapa da região da Clínica Vita" src="https://maps.google.com/maps?q=Av.%20Paulista%2C%201000%2C%20S%C3%A3o%20Paulo&t=&z=14&ie=UTF8&iwloc=&output=embed" loading="lazy" referrerPolicy="no-referrer-when-downgrade"/><div className="map-card"><span>⌖</span><div><b>Clínica Vita</b><small>Av. Paulista, 1000 · São Paulo, SP</small></div><a href={mapsUrl} target="_blank" rel="noreferrer" aria-label="Abrir rota no Google Maps">↗</a></div></section>
 
       <footer className="footer"><div className="footer-main"><a className="brand brand-footer" href="#inicio"><span className="brand-mark">v</span><span>clínica<span className="brand-light">vita</span><small>SAÚDE COM PRESENÇA</small></span></a><p>Cuidado próximo, conhecimento<br/>e atenção em cada detalhe.</p><div className="footer-nav"><a href="#sobre">A clínica</a><a href="#especialidades">Especialidades</a><a href="#equipe">Profissionais</a><a href="#contato">Contato</a></div><div className="footer-social"><a href="https://instagram.com" aria-label="Instagram" target="_blank" rel="noreferrer">ig ↗</a><a href="https://facebook.com" aria-label="Facebook" target="_blank" rel="noreferrer">fb ↗</a></div></div><div className="footer-bottom"><span>© {year} Clínica Vita · Conteúdo demonstrativo fictício.</span><span>Privacidade&nbsp;&nbsp;&nbsp; Acessibilidade</span><a href="#inicio">Voltar ao topo ↑</a></div></footer>
-      <a className="whatsapp-float" href={whatsappUrl} target="_blank" rel="noreferrer" aria-label="Fale com a Clínica Vita pelo WhatsApp">✆<span>Fale conosco</span></a>
+      <WhatsAppFloat />
     </main>
   );
 }
