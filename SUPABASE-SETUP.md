@@ -8,7 +8,7 @@
 
 ```env
 NEXT_PUBLIC_SUPABASE_URL=https://SEU-PROJETO.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=SUA_CHAVE_PUBLICA_ANON
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=SUA_CHAVE_PUBLICAVEL
 ```
 
 6. Reinicie `npm run dev`.
@@ -24,9 +24,24 @@ values ('UUID-DO-USUARIO-AUTH', 'Admin Clínica Vita', 'admin');
 
 11. Acesse `/admin/login`. Crie outros funcionários por Authentication e insira seus perfis em `staff_profiles` com papel `receptionist` ou `professional`. Para profissional, preencha `professional_id`.
 
+## Configuração do Modelo Premium
+
+Depois das migrações anteriores, execute `supabase/migrations/202611060001_premium_patient_portal.sql` no SQL Editor. Ela cria a área do paciente, os pedidos de cancelamento/remarcação, os relatórios agregados e reforça as permissões de agenda. Não apaga os agendamentos existentes.
+
+Em Authentication → URL Configuration, permita estes endereços de retorno:
+
+- `http://localhost:3000/auth/callback` para desenvolvimento.
+- `https://SEU-DOMINIO/auth/callback` para produção.
+
+O e-mail de confirmação de cadastro e o de redefinição de senha dependem da configuração de SMTP/Authentication no Supabase. As telas só confirmam o pedido depois da resposta do Supabase. O portal mostra apenas os dados e agendamentos vinculados ao usuário autenticado; não contém prontuário.
+
+Para usar **Equipe → Enviar convite** e ativar/desativar contas pela interface, configure `SUPABASE_SECRET_KEY` como variável secreta no ambiente de servidor (e no provedor de hospedagem). Copie a chave **Secret** na seção API Keys do Supabase; a chave antiga `service_role` também é aceita. Em desenvolvimento, coloque-a apenas no `.env.local`, sem prefixo `NEXT_PUBLIC_`, e reinicie a aplicação. Essa chave tem acesso elevado e nunca deve ir para o navegador, para o GitHub ou para um arquivo público. Sem ela, o painel ainda permite gerenciar profissionais e horários, mas convites e controle de contas ficam indisponíveis; nesse caso, crie contas em Authentication → Users e vincule os perfis administrativos pelo SQL Editor conforme abaixo.
+
+Defina `NEXT_PUBLIC_SITE_URL` como `http://localhost:3000` localmente e como o endereço HTTPS final em produção. Configure esse mesmo domínio como destino permitido no Supabase.
+
 ## Configuração de produção
 
-Configure as mesmas duas variáveis no provedor de hospedagem. Crie usuários de equipe com acesso mínimo necessário e remova os profissionais, preços, endereço e horários fictícios antes de publicar para uma clínica. Nunca use a chave `service_role` no cliente ou em `NEXT_PUBLIC_*`.
+No provedor de hospedagem, configure `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` e `NEXT_PUBLIC_SITE_URL`. Adicione `SUPABASE_SECRET_KEY` como variável secreta apenas se for usar convites e controle de contas da equipe. Configure `NEXT_PUBLIC_CLINIC_WHATSAPP` para o contato real da clínica e as variáveis do Resend se quiser receber mensagens do formulário institucional. Crie contas com acesso mínimo necessário e substitua profissionais, preços, endereço e horários fictícios antes de publicar para uma clínica. Nunca use a chave `secret` ou `service_role` no cliente ou em `NEXT_PUBLIC_*`.
 
 ## Observações de segurança e escopo
 
@@ -35,6 +50,8 @@ Configure as mesmas duas variáveis no provedor de hospedagem. Crie usuários de
 - Pedidos para várias datas criam uma solicitação pendente em cada data para o mesmo paciente, profissional e horário; a série é toda aceita ou toda rejeitada.
 - O visitante público recebe apenas o UUID de confirmação; RLS impede a leitura pública de pacientes e agendamentos.
 - A confirmação é uma solicitação pendente. Mensagem por e-mail, lembrete e WhatsApp não estão ativados neste módulo; não mostramos que algo foi enviado.
-- O cancelamento e a confirmação são feitos por equipe autenticada. O portal de paciente com login e remarcação pelo próprio paciente ainda precisa ser um módulo posterior.
+- O portal do paciente permite pedir cancelamento ou sugerir remarcação. A equipe precisa revisar o pedido; a alteração só é efetivada após aprovação e nova validação da disponibilidade.
+- O Modelo Premium inclui relatórios sem dados pessoais, exportados em CSV, e auditoria das principais ações administrativas.
+- Confirmações de consultas, lembretes e notificações por WhatsApp não são enviados automaticamente neste starter. A conexão com Supabase Auth é real; SMTP e integrações externas precisam ser configurados separadamente.
 - A proteção LGPD exige políticas, aviso de privacidade, retenção e processos da clínica; este starter não substitui avaliação jurídica/técnica.
 - Cadastre a clínica como administrador antes de permitir acesso de funcionários. O modelo de demonstração não contém prontuário ou dados de saúde.

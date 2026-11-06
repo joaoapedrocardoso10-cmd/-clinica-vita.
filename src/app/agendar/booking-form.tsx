@@ -42,9 +42,12 @@ export default function BookingForm() {
     : "";
 
   useEffect(() => {
-    const currentDate = new Date();
-    setToday(dateKey(currentDate));
-    setViewingMonth(`${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, "0")}`);
+    const timer = window.setTimeout(() => {
+      const currentDate = new Date();
+      setToday(dateKey(currentDate));
+      setViewingMonth(`${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, "0")}`);
+    }, 0);
+    return () => window.clearTimeout(timer);
   }, []);
 
   const monthDates = useMemo(() => {
@@ -76,11 +79,9 @@ export default function BookingForm() {
   }, []);
 
   useEffect(() => {
-    if (!serviceId || !professionalId || !requestedDatesKey) { setSlots([]); setLoadingSlots(false); return; }
+    if (!serviceId || !professionalId || !requestedDatesKey) return;
     let active = true;
     let controller: AbortController | null = null;
-    setLoadingSlots(true);
-    setSlots([]);
     const datesToLoad = requestedDatesKey.split(",");
     const loadSlots = async () => {
       controller?.abort();
@@ -123,9 +124,9 @@ export default function BookingForm() {
         if (active) setLoadingSlots(false);
       }
     };
-    loadSlots();
+    const initialLoad = window.setTimeout(() => { setLoadingSlots(true); setSlots([]); void loadSlots(); }, 0);
     const refresh = window.setInterval(loadSlots, 30000);
-    return () => { active = false; window.clearInterval(refresh); controller?.abort(); };
+    return () => { active = false; window.clearTimeout(initialLoad); window.clearInterval(refresh); controller?.abort(); };
   }, [serviceId, professionalId, requestedDatesKey, slot]);
 
   function chooseDate(value: string) {
@@ -133,6 +134,7 @@ export default function BookingForm() {
     setSelectedDates(value ? [value] : []);
     if (value) setViewingMonth(value.slice(0, 7));
     setSlots([]);
+    setLoadingSlots(false);
     setSlot("");
     setNotice("");
     setSlotNotice("");
@@ -144,7 +146,7 @@ export default function BookingForm() {
     const next = new Date(year, month - 1 + amount, 1, 12);
     const nextKey = `${next.getFullYear()}-${String(next.getMonth() + 1).padStart(2, "0")}`;
     setViewingMonth(nextKey);
-    setDate(""); setSelectedDates([]); setSlots([]); setSlot(""); setNotice(""); setSlotNotice("");
+    setDate(""); setSelectedDates([]); setSlots([]); setSlot(""); setLoadingSlots(false); setNotice(""); setSlotNotice("");
     setWeekdayFilter(null);
   }
 
@@ -158,7 +160,7 @@ export default function BookingForm() {
     if (matchingWeekdayDates.length < 2) return;
     setSelectedDates(matchingWeekdayDates);
     setDate(matchingWeekdayDates[0]);
-    setSlots([]); setSlot(""); setNotice(""); setSlotNotice("");
+    setSlots([]); setSlot(""); setLoadingSlots(false); setNotice(""); setSlotNotice("");
   }
 
   function scrollDates(direction: -1 | 1) {
@@ -188,9 +190,9 @@ export default function BookingForm() {
     <div className="booking-card-head"><span>AGENDE SUA CONSULTA</span><div><i/> Atendimento online</div></div>
     <div className="booking-step"><span>1</span><div><h2>Escolha o atendimento</h2><small>Selecione o serviço e o profissional.</small></div></div>
     <label htmlFor="service">Serviço ou especialidade</label>
-    <select id="service" value={serviceId} onChange={(e) => { setServiceId(e.target.value); setProfessionalId(""); setSlots([]); setSlot(""); }} required><option value="">Selecione um serviço</option>{services.map((item) => <option key={item.id} value={item.id}>{item.name} · {item.duration_minutes} min</option>)}</select>
+    <select id="service" value={serviceId} onChange={(e) => { setServiceId(e.target.value); setProfessionalId(""); setSlots([]); setSlot(""); setLoadingSlots(false); }} required><option value="">Selecione um serviço</option>{services.map((item) => <option key={item.id} value={item.id}>{item.name} · {item.duration_minutes} min</option>)}</select>
     <label htmlFor="professional">Profissional</label>
-    <select id="professional" value={professionalId} onChange={(e) => { setProfessionalId(e.target.value); setSlots([]); setSlot(""); }} disabled={!serviceId} required><option value="">Selecione um profissional</option>{matchedProfessionals.map((item) => <option key={item.id} value={item.id}>{item.display_name}</option>)}</select>
+    <select id="professional" value={professionalId} onChange={(e) => { setProfessionalId(e.target.value); setSlots([]); setSlot(""); setLoadingSlots(false); }} disabled={!serviceId} required><option value="">Selecione um profissional</option>{matchedProfessionals.map((item) => <option key={item.id} value={item.id}>{item.display_name}</option>)}</select>
     <section className="booking-whatsapp" aria-label="WhatsApp do profissional escolhido">
       <div className="professional-contact-copy"><span className="professional-contact-icon" aria-hidden="true"><svg viewBox="0 0 32 32" focusable="false"><path d="M16.02 3.2a12.63 12.63 0 0 0-10.8 19.18L3.5 28.8l6.57-1.72A12.65 12.65 0 1 0 16.02 3.2Zm0 22.98c-1.94 0-3.84-.52-5.5-1.5l-.4-.24-3.9 1.02 1.04-3.8-.26-.4a10.25 10.25 0 1 1 9.02 4.92Zm5.63-7.68c-.31-.16-1.83-.9-2.11-1-.28-.1-.49-.16-.7.16-.2.31-.8 1-.98 1.2-.18.21-.36.24-.67.08-.31-.15-1.3-.48-2.48-1.53-.92-.82-1.54-1.83-1.72-2.14-.18-.31-.02-.48.14-.64.14-.14.31-.36.46-.54.15-.18.2-.3.31-.52.1-.2.05-.39-.03-.54-.08-.16-.7-1.68-.96-2.3-.25-.6-.51-.52-.7-.53h-.6c-.2 0-.54.08-.82.39-.28.31-1.08 1.05-1.08 2.57s1.1 2.98 1.25 3.19c.15.2 2.17 3.31 5.25 4.64.73.31 1.3.5 1.75.64.74.23 1.41.2 1.94.12.6-.09 1.83-.75 2.09-1.48.26-.72.26-1.34.18-1.47-.08-.13-.28-.2-.59-.36Z" /></svg></span><span><b>Fale com o profissional</b><small>{selectedProfessional ? `WhatsApp de ${selectedProfessional.display_name}` : "Escolha um profissional acima para ver o contato direto."}</small></span></div>
       {professionalWhatsApp ? <a href={professionalWhatsApp} target="_blank" rel="noreferrer">Conversar pelo WhatsApp <span aria-hidden="true">↗</span></a> : <span className="professional-contact-unavailable">{selectedProfessional ? "WhatsApp direto não cadastrado" : "Selecione acima"}</span>}

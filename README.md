@@ -1,46 +1,43 @@
-# Clínica Vita — modelo Essencial
+# Clínica Vita — Modelo Premium
 
-Site institucional demonstrativo em Next.js, React, TypeScript e Tailwind CSS.
+Plataforma demonstrativa de clínica que reúne site institucional, agendamento online, portal do paciente e painel de gestão. Construída com Next.js, TypeScript, Tailwind CSS e Supabase/PostgreSQL.
+
+## O que inclui
+
+- Site institucional responsivo, formulário de contato e atalhos para WhatsApp.
+- Agenda pública que consulta o banco, bloqueia horários ocupados e permite pedidos para datas recorrentes.
+- Portal do paciente com cadastro, login, recuperação de senha, perfil, histórico e pedidos de cancelamento/remarcação.
+- Painel por perfil: administrador, recepção e profissional, com controle de acesso no servidor e no banco.
+- Gestão de agendamentos, pacientes, serviços, profissionais, horários semanais e contas da equipe.
+- Relatórios agregados com filtro por período e exportação CSV disponível para a administração.
+- Registro das ações administrativas relevantes.
+
+O sistema não armazena prontuários. Dados, nomes de profissionais, preços, endereço, telefones e horários iniciais são demonstrativos e precisam ser trocados antes de usar com uma clínica real.
 
 ## Executar localmente
 
-```powershell
-npm install
-npm run dev
-```
+1. Instale as dependências com `npm install`.
+2. Copie `.env.example` para `.env.local` e preencha as variáveis necessárias.
+3. Configure o Supabase conforme [SUPABASE-SETUP.md](SUPABASE-SETUP.md). Execute as migrações existentes em ordem e, por último, `supabase/migrations/202611060001_premium_patient_portal.sql`.
+4. Inicie a aplicação com `npm run dev` e abra `http://localhost:3000`.
 
-Abra http://localhost:3000. Para validar o build antes de publicar:
+Para validar antes de publicar:
 
 ```powershell
 npm run lint
 npm run build
 ```
 
-## Antes de publicar
+## Variáveis
 
-O projeto usa dados demonstrativos. Atualize o nome, endereço, telefone, e-mail, profissionais, registros profissionais, serviços, links sociais e textos em `src/app/page.tsx`. Substitua as imagens de referência por imagens autorizadas da clínica. Confirme o endereço do mapa e o número do WhatsApp.
+- `NEXT_PUBLIC_SUPABASE_URL` e `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` conectam o site ao Supabase. A aplicação ainda aceita o nome antigo `NEXT_PUBLIC_SUPABASE_ANON_KEY`.
+- `NEXT_PUBLIC_SITE_URL` define os links de confirmação e convite.
+- `NEXT_PUBLIC_CLINIC_WHATSAPP` define o WhatsApp público da clínica.
+- `RESEND_API_KEY`, `CONTACT_TO_EMAIL` e `CONTACT_FROM_EMAIL` habilitam o formulário institucional por e-mail.
+- `SUPABASE_SECRET_KEY` é opcional e só serve no servidor para convidar e ativar/desativar funcionários. Nunca adicione o prefixo `NEXT_PUBLIC_`.
 
-O formulário valida os campos no navegador, mas ainda não envia mensagens. Conecte um serviço de recebimento e só então troque o aviso por uma confirmação de envio. Não publique dados fictícios como se fossem reais.
+Confirmações e lembretes de consultas por e-mail, WhatsApp Business e pagamentos não são enviados automaticamente neste projeto. Só apresente essas funções como ativas depois de configurar e testar os serviços externos correspondentes.
 
-## Publicar na Netlify
+## Publicação
 
-1. Crie um repositório vazio no GitHub pelo site, sem README, licença ou `.gitignore` adicionais.
-2. Configure `git config user.name` e `git config user.email` com seu nome e e-mail do GitHub.
-3. Na pasta do projeto, rode:
-
-```powershell
-git branch -M main
-git add .
-git commit -m "Clínica Vita Essencial"
-git remote add origin https://github.com/SEU-USUARIO/SEU-REPOSITORIO.git
-git push -u origin main
-```
-
-4. No painel da Netlify, escolha **Add new project → Import an existing project**, conecte o GitHub, selecione o repositório e publique.
-5. A Netlify detecta Next.js. O arquivo `netlify.toml` define `npm run build` e Node.js 22.
-
-Após conectar GitHub e Netlify, novos commits na branch principal podem disparar implantações automáticas. A conta e as permissões precisam ser configuradas pelo proprietário no navegador.
-
-## Observação
-
-Esta versão é o modelo Essencial. Não contém banco de dados, autenticação ou agendamento. O formulário não transmite dados pessoais até a configuração de um serviço de envio.
+Use a branch `modelo-premium` como produto Premium separado. Configure as variáveis no provedor de hospedagem, execute a migração Premium no Supabase, configure os endereços de retorno do Supabase e teste cadastro, login, agendamento, permissões e solicitações antes de apresentar o sistema a uma clínica.
