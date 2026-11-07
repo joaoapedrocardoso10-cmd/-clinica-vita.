@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { PATIENT_PHONE_PATTERN } from "@/lib/phone";
 
 async function staffClient() {
   const supabase = await createSupabaseServerClient();
@@ -32,8 +33,8 @@ export async function GET(request: Request) {
   return NextResponse.json({ patients: [...results.values()].sort((a, b) => b.created_at.localeCompare(a.created_at)).slice(0, 100) });
 }
 
-const createSchema = z.object({ fullName: z.string().trim().min(2).max(120), email: z.string().trim().email().max(254), phone: z.string().trim().min(8).max(30) });
-const updateSchema = z.object({ id: z.string().uuid(), fullName: z.string().trim().min(2).max(120), phone: z.string().trim().min(8).max(30) });
+const createSchema = z.object({ fullName: z.string().trim().min(2).max(120), email: z.string().trim().email().max(254), phone: z.string().trim().regex(PATIENT_PHONE_PATTERN, "Informe somente 10 a 13 números, incluindo DDD.") });
+const updateSchema = z.object({ id: z.string().uuid(), fullName: z.string().trim().min(2).max(120), phone: z.string().trim().regex(PATIENT_PHONE_PATTERN, "Informe somente 10 a 13 números, incluindo DDD.") });
 
 export async function POST(request: Request) {
   const access = await staffClient();

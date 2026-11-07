@@ -12,6 +12,7 @@ export async function GET(request: Request) {
   const parsed = querySchema.safeParse({ serviceId: url.searchParams.get("serviceId"), professionalId: url.searchParams.get("professionalId"), date: url.searchParams.get("date") });
   if (!parsed.success) return NextResponse.json({ error: "Selecione um serviço, profissional e data válidos." }, { status: 400 });
   const { serviceId, professionalId, date } = parsed.data;
+  await supabase.rpc("release_expired_online_holds");
   const { data, error } = await supabase.rpc("slot_options", { p_service_id: serviceId, p_professional_id: professionalId, p_date: date });
   if (error) {
     // Keep the existing booking flow usable until the additive occupancy migration is applied.

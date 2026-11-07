@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import Link from "next/link";
 import { professionalWhatsAppUrl } from "@/lib/clinic-contact";
+import { normalizePatientPhone } from "@/lib/phone";
 
 type Service = { id: string; name: string; duration_minutes: number; price_cents: number | null; specialty_id: string | null };
 type Professional = { id: string; display_name: string; specialty_id: string | null; bio: string | null; whatsapp_phone: string | null };
@@ -32,6 +34,10 @@ export default function BookingForm() {
   const [notice, setNotice] = useState("");
   const [slotNotice, setSlotNotice] = useState("");
   const [confirmed, setConfirmed] = useState(false);
+  const [bookingMethod, setBookingMethod] = useState<"whatsapp" | "online">("whatsapp");
+  const [accountLoading, setAccountLoading] = useState(true);
+  const [accountProfile, setAccountProfile] = useState<{ full_name: string; email: string; phone: string } | null>(null);
+  const [successWhatsAppUrl, setSuccessWhatsAppUrl] = useState("");
   const dateScroller = useRef<HTMLDivElement>(null);
 
   const selectedService = services.find((item) => item.id === serviceId);
@@ -48,6 +54,24 @@ export default function BookingForm() {
       setViewingMonth(`${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, "0")}`);
     }, 0);
     return () => window.clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+    fetch("/api/paciente/perfil", { cache: "no-store" })
+      .then(async (response) => {
+        if (!response.ok) return null;
+        const result = await response.json();
+        return result.profile as { full_name: string; email: string; phone: string } | null;
+      })
+      .then((profile) => {
+        if (!active || !profile) return;
+        setAccountProfile(profile);
+        setPatient({ fullName: profile.full_name, email: profile.email, phone: normalizePatientPhone(profile.phone ?? "") });
+      })
+      .catch(() => undefined)
+      .finally(() => { if (active) setAccountLoading(false); });
+    return () => { active = false; };
   }, []);
 
   const monthDates = useMemo(() => {
@@ -75,6 +99,15 @@ export default function BookingForm() {
       if (!response.ok) throw new Error(result.error);
       setServices(result.services);
       setProfessionals(result.professionals);
+      const params = new URLSearchParams(window.location.search);
+      const requestedService = result.services.find((item: Service) => item.id === params.get("servico"));
+      const requestedProfessional = result.professionals.find((item: Professional) => item.id === params.get("profissional"));
+      if (requestedService) {
+        setServiceId(requestedService.id);
+        if (requestedProfessional && (!requestedService.specialty_id || requestedProfessional.specialty_id === requestedService.specialty_id)) {
+          setProfessionalId(requestedProfessional.id);
+        }
+      }
     }).catch((error: Error) => setNotice(error.message || "Não foi possível carregar os serviços."));
   }, []);
 
@@ -159,6 +192,7 @@ export default function BookingForm() {
     if (isAllWeekdayDatesSelected) { chooseDate(""); return; }
     if (matchingWeekdayDates.length < 2) return;
     setSelectedDates(matchingWeekdayDates);
+    setBookingMethod("whatsapp");
     setDate(matchingWeekdayDates[0]);
     setSlots([]); setSlot(""); setLoadingSlots(false); setNotice(""); setSlotNotice("");
   }
@@ -174,14 +208,30 @@ export default function BookingForm() {
     try {
       const isRecurring = selectedDates.length > 1;
       const localTime = new Intl.DateTimeFormat("en-GB", { timeZone: "America/Sao_Paulo", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).format(new Date(slot));
+      if (accountProfile && accountProfile.phone !== patient.phone) {
+        const profileResponse = await fetch("/api/paciente/perfil", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ fullName: accountProfile.full_name, phone: patient.phone }) });
+        const profileResult = await profileResponse.json();
+        if (!profileResponse.ok) throw new Error(profileResult.error || "Confira seu telefone para continuar.");
+        setAccountProfile({ ...accountProfile, phone: patient.phone });
+      }
       const booking = isRecurring
-        ? { serviceId, professionalId, dates: selectedDates, time: localTime, patient }
-        : { serviceId, professionalId, startsAt: slot, patient };
+        ? { serviceId, professionalId, dates: selectedDates, time: localTime, patient, bookingMethod: "whatsapp" as const }
+        : { serviceId, professionalId, startsAt: slot, patient, bookingMethod };
       const response = await fetch("/api/booking", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(booking) });
       const result = await response.json();
       if (!response.ok) throw new Error(result.error || "Não foi possível concluir o pedido.");
+      if (bookingMethod === "online") {
+        if (!result.checkoutUrl) throw new Error("Não recebemos o link seguro para pagamento. Tente novamente ou escolha WhatsApp.");
+        window.location.assign(result.checkoutUrl as string);
+        return;
+      }
+      const selectedDay = new Intl.DateTimeFormat("pt-BR", { weekday: "long", day: "numeric", month: "long", timeZone: "America/Sao_Paulo" }).format(new Date(slot));
+      const selectedTime = new Intl.DateTimeFormat("pt-BR", { hour: "2-digit", minute: "2-digit", timeZone: "America/Sao_Paulo" }).format(new Date(slot));
+      const whatsappMessage = "Olá, " + (selectedProfessional?.display_name ?? "gostaria de falar") + "! Solicitei " + (selectedService?.name ?? "um atendimento") + " para " + selectedDay + " às " + selectedTime + ". Pode me ajudar a confirmar?";
+      const confirmedWhatsAppUrl = selectedProfessional?.whatsapp_phone ? professionalWhatsAppUrl(selectedProfessional.whatsapp_phone, whatsappMessage) : "";
+      setSuccessWhatsAppUrl(isRecurring ? "" : confirmedWhatsAppUrl);
       setConfirmed(true); setNotice(isRecurring ? `Solicitações recebidas para ${selectedDates.length} ${weekdayPlural[new Date(`${selectedDates[0]}T12:00:00`).getDay()]}. A clínica confirmará as datas pelos dados informados.` : "Solicitação recebida. A clínica confirmará o atendimento pelos dados informados.");
-      setPatient({ fullName: "", email: "", phone: "" }); setSlot("");
+      if (!accountProfile) setPatient({ fullName: "", email: "", phone: "" }); setSlot("");
     } catch (error) { setNotice(error instanceof Error ? error.message : "Falha ao enviar o agendamento."); }
     finally { setBusy(false); }
   }
@@ -244,10 +294,25 @@ export default function BookingForm() {
     </div>
     <div className="booking-divider"/>
     <div className="booking-step"><span>3</span><div><h2>Seus dados</h2><small>Para a clínica retornar e confirmar.</small></div></div>
-    <label htmlFor="patient-name">Nome completo</label><input id="patient-name" autoComplete="name" maxLength={120} value={patient.fullName} onChange={(e) => setPatient({ ...patient, fullName: e.target.value })} required/>
-    <div className="patient-fields"><div><label htmlFor="patient-email">E-mail</label><input id="patient-email" type="email" autoComplete="email" maxLength={254} value={patient.email} onChange={(e) => setPatient({ ...patient, email: e.target.value })} required/></div><div><label htmlFor="patient-phone">Telefone</label><input id="patient-phone" type="tel" autoComplete="tel" maxLength={30} value={patient.phone} onChange={(e) => setPatient({ ...patient, phone: e.target.value })} required/></div></div>
+    <label htmlFor="patient-name">Nome completo</label><input id="patient-name" autoComplete="name" maxLength={120} value={patient.fullName} onChange={(e) => setPatient({ ...patient, fullName: e.target.value })} readOnly={Boolean(accountProfile)} required/>
+    <div className="patient-fields"><div><label htmlFor="patient-email">E-mail</label><input id="patient-email" type="email" autoComplete="email" maxLength={254} value={patient.email} onChange={(e) => setPatient({ ...patient, email: e.target.value })} readOnly={Boolean(accountProfile)} required/></div><div><label htmlFor="patient-phone">Telefone</label><input id="patient-phone" type="tel" inputMode="numeric" pattern="[0-9]{10,13}" title="Informe 10 a 13 dígitos, incluindo DDD; o código do país 55 é opcional." autoComplete="tel" minLength={10} maxLength={13} value={patient.phone} onChange={(e) => setPatient({ ...patient, phone: normalizePatientPhone(e.target.value) })} required/></div></div>
+    {accountProfile ? <div className="booking-account-note"><span>✓</span><div><b>Você está conectado à sua conta</b><small>Nome e e-mail vieram do seu perfil. Atualize o telefone somente se necessário.</small></div></div> : <div className="booking-account-note"><span>＋</span><div><b>Agende ainda mais rápido da próxima vez</b><small><Link href="/paciente/login?modo=cadastro">Crie sua conta</Link> para salvar seus dados. Você também pode continuar sem conta.</small></div></div>}
+    <div className="booking-payment-choice">
+      <div className="booking-payment-heading"><span>COMO PREFERE CONTINUAR?</span><small>Esta demonstração pode ser configurada para cada clínica.</small></div>
+      <div className="booking-payment-options">
+        <label className={bookingMethod === "whatsapp" ? "booking-payment-option chosen" : "booking-payment-option"}>
+          <input type="radio" name="booking-method" value="whatsapp" checked={bookingMethod === "whatsapp"} onChange={() => setBookingMethod("whatsapp")}/>
+          <span className="payment-option-icon whatsapp-option-icon">◉</span><span><b>Falar pelo WhatsApp</b><small>A equipe confirma o atendimento diretamente com você.</small></span><i>{bookingMethod === "whatsapp" ? "✓" : ""}</i>
+        </label>
+        <label className={bookingMethod === "online" ? "booking-payment-option chosen" : "booking-payment-option"}>
+          <input type="radio" name="booking-method" value="online" checked={bookingMethod === "online"} onChange={() => setBookingMethod("online")} disabled={selectedDates.length > 1}/>
+          <span className="payment-option-icon">▣</span><span><b>Pagar online</b><small>{selectedService?.price_cents != null ? "Total: " + new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(selectedService.price_cents / 100) + " · Mercado Pago (requer configuração da clínica)." : "Checkout online, se o serviço tiver valor configurado."}{selectedDates.length > 1 ? " Disponível para uma consulta por vez." : ""}</small></span><i>{bookingMethod === "online" ? "✓" : ""}</i>
+        </label>
+      </div>
+      <p className="booking-payment-template-note">No site do cliente, a clínica escolhe se ativa WhatsApp, pagamento online ou os dois.</p>
+    </div>
     <div className="booking-consent">Ao continuar, você autoriza a clínica a usar seus dados para organizar e responder sobre esta solicitação. Não informe dados clínicos neste formulário.</div>
-    <button className="button booking-submit" type="submit" disabled={busy || !services.length || loadingSlots || (selectedDates.length > 1 && !occupancyEnabled)}>{busy ? "Enviando solicitação…" : selectedDates.length > 1 ? `Solicitar ${selectedDates.length} agendamentos` : "Solicitar agendamento"}<span>↗</span></button>
-    {notice && <p className={confirmed ? "booking-notice success" : "booking-notice"} role="status">{notice}</p>}
+    <button className="button booking-submit" type="submit" disabled={busy || !services.length || loadingSlots || accountLoading || (selectedDates.length > 1 && !occupancyEnabled)}>{busy ? (bookingMethod === "online" ? "Preparando pagamento…" : "Enviando solicitação…") : selectedDates.length > 1 ? "Solicitar " + selectedDates.length + " datas" : bookingMethod === "online" ? "Reservar e ir para o pagamento" : "Solicitar agendamento"}<span>↗</span></button>
+    {notice && <div className={confirmed ? "booking-notice success" : "booking-notice"} role="status">{notice}{confirmed && successWhatsAppUrl && <a className="booking-confirmation-whatsapp" href={successWhatsAppUrl} target="_blank" rel="noreferrer">Abrir conversa no WhatsApp ↗</a>}</div>}
   </form>;
 }

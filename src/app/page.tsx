@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { clinicWhatsAppDisplay, clinicWhatsAppUrl } from "@/lib/clinic-contact";
 import WhatsAppFloat from "@/components/whatsapp-float";
+import AdminNavLink from "@/components/admin-nav-link";
 
 const specialties = [
   { icon: "✳", name: "Clínica geral", detail: "Cuidado próximo em todas as fases da vida." },
@@ -69,17 +70,29 @@ export default function Home() {
         <a className="brand" href="#inicio" aria-label="Clínica Vita, início"><span className="brand-mark">v</span><span>clínica<span className="brand-light">vita</span><small>SAÚDE COM PRESENÇA</small></span></a>
         <button className="menu-toggle" aria-label={menuOpen ? "Fechar menu" : "Abrir menu"} aria-expanded={menuOpen} onClick={() => setMenuOpen(!menuOpen)}>{menuOpen ? "×" : "☰"}</button>
         <nav className={menuOpen ? "nav nav-open" : "nav"} aria-label="Navegação principal">
-          <a href="#sobre" onClick={() => setMenuOpen(false)}>A clínica</a><a href="#especialidades" onClick={() => setMenuOpen(false)}>Especialidades</a><a href="#equipe" onClick={() => setMenuOpen(false)}>Profissionais</a><a href="#contato" onClick={() => setMenuOpen(false)}>Contato</a><a href="/paciente/login" onClick={() => setMenuOpen(false)}>Área do paciente</a>
+          <a href="#sobre" onClick={() => setMenuOpen(false)}>A clínica</a><a href="#especialidades" onClick={() => setMenuOpen(false)}>Especialidades</a><a href="#equipe" onClick={() => setMenuOpen(false)}>Profissionais</a><a href="#contato" onClick={() => setMenuOpen(false)}>Contato</a><AdminNavLink onClick={() => setMenuOpen(false)} /><a href="/paciente/login" onClick={() => setMenuOpen(false)}>Entrar / criar conta</a>
           <a className="button button-small" href="/agendar" onClick={() => setMenuOpen(false)}>Agendar consulta <span>↗</span></a>
         </nav>
       </header>
 
       <section className="hero" id="inicio">
-        <div className="hero-copy"><div className="eyebrow"><span className="eyebrow-line"/> CUIDADO FEITO PARA VOCÊ</div><h1>Saúde é se sentir <em>bem cuidado.</em></h1><p>Uma clínica completa, com profissionais que escutam, acolhem e acompanham você em cada etapa.</p><div className="hero-actions"><a className="button" href="/agendar">Agende sua consulta <span>↗</span></a><a className="text-link" href="#especialidades">Conheça a clínica <span>↓</span></a></div><div className="hero-note"><span className="avatar-stack"><i>H</i><i>R</i><i>C</i></span><span><b>Atendimento próximo</b><small>Uma equipe ao seu lado.</small></span></div></div>
+        <div className="hero-copy"><div className="eyebrow"><span className="eyebrow-line"/> CUIDADO FEITO PARA VOCÊ</div><h1>Saúde é se sentir <em>bem cuidado.</em></h1><p>Uma clínica completa, com profissionais que escutam, acolhem e acompanham você em cada etapa.</p><div className="hero-actions"><a className="button" href="/agendar">Agende sua consulta <span>↗</span></a><a className="text-link" href="/paciente/login?modo=cadastro">Crie sua conta <span>↗</span></a></div><div className="hero-note"><span className="avatar-stack"><i>H</i><i>R</i><i>C</i></span><span><b>Atendimento próximo</b><small>Uma equipe ao seu lado.</small></span></div></div>
         <div className="hero-visual"><div className="hero-image" role="img" aria-label="Profissional de saúde acolhendo uma paciente"/><div className="image-tint"/><div className="hero-card"><div className="card-icon">✳</div><div><b>Seu cuidado, por inteiro.</b><small>Medicina com atenção e propósito.</small></div><span className="card-arrow">↗</span></div><div className="hero-stamp"><span>V</span><small>CLÍNICA<br/>VITA</small></div></div>
         <div className="hero-bottom"><span>01 — 04</span><span className="bottom-line"/><span>UM NOVO JEITO DE CUIDAR</span><a href="#sobre" aria-label="Rolar para conhecer a clínica">↓</a></div>
       </section>
 
+      <section className="premium-showcase" aria-labelledby="premium-title">
+        <div className="premium-showcase-head">
+          <div><span className="premium-demo-label">MODELO PREMIUM · DEMONSTRAÇÃO CONFIGURÁVEL</span><h2 id="premium-title">Um site. <em>Três caminhos</em> para cuidar melhor.</h2></div>
+          <p>Este template pode ser personalizado para cada clínica. Ative cadastro de pacientes, agendamento por WhatsApp, pagamento online e gestão privada.</p>
+        </div>
+        <div className="premium-feature-grid">
+          <a href="/paciente/login?modo=cadastro" className="premium-feature-card"><span className="premium-feature-number">01</span><span className="premium-feature-icon">↗</span><h3>Portal do paciente</h3><p>Crie uma conta com Google, Facebook ou e-mail. Depois, seus dados ficam preenchidos na agenda.</p><b>Criar conta <span>↗</span></b></a>
+          <a href="/agendar" className="premium-feature-card"><span className="premium-feature-number">02</span><span className="premium-feature-icon">◷</span><h3>Agende do seu jeito</h3><p>Escolha falar pelo WhatsApp do profissional ou pagar online pelo checkout da clínica.</p><b>Ver as opções <span>↗</span></b></a>
+          <article className="premium-feature-card premium-private-card"><span className="premium-feature-number">03</span><span className="premium-feature-icon">⌑</span><h3>Painel administrativo privado</h3><p>Agenda, equipe, serviços e relatórios só aparecem para o dono e usuários autorizados pela clínica. Não existe cadastro público para o painel.</p><b>Acesso privado da clínica</b></article>
+        </div>
+        <p className="premium-template-note">Demonstração fictícia: contas sociais e pagamentos precisam ser conectados às contas da clínica antes de ativar em produção.</p>
+      </section>
       <section className="trust-strip" aria-label="Diferenciais"><div><span>✳</span><p><b>Escuta de verdade</b><small>Você no centro de cada conversa</small></p></div><div><span>⌖</span><p><b>Equipe integrada</b><small>Especialidades que se conectam</small></p></div><div><span>◷</span><p><b>Tempo para você</b><small>Consultas sem pressa</small></p></div><div><span>⌂</span><p><b>Um espaço acolhedor</b><small>Feito para você se sentir bem</small></p></div></section>
 
       <section className="section about" id="sobre"><div className="section-kicker">01 / SOBRE A VITA</div><div className="about-grid"><div><h2>Mais do que tratar.<br/><em>Cuidar de verdade.</em></h2></div><div className="about-text"><p className="lead">Acreditamos que saúde começa quando alguém realmente escuta.</p><p>Na Clínica Vita, cada encontro é pensado para você. Com uma equipe multidisciplinar e um olhar atento à sua história, oferecemos um cuidado completo, próximo e humano.</p><a className="text-link" href="#equipe">Conheça nossa equipe <span>↗</span></a></div></div><div className="about-image" role="img" aria-label="Interior tranquilo e acolhedor da clínica"><div className="image-caption">UM ESPAÇO PENSADO PARA O SEU BEM-ESTAR <span>— SÃO PAULO, SP</span></div></div></section>
