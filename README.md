@@ -1,6 +1,6 @@
-# Clínica Vita — modelo Essencial
+# Clínica Vita Estética — modelo Essencial
 
-Site institucional demonstrativo em Next.js, React, TypeScript e Tailwind CSS.
+Site institucional demonstrativo em Next.js, React, TypeScript e Tailwind CSS. Serviços, equipe, depoimentos, endereço e contatos são ilustrativos e precisam ser revisados pela clínica antes de publicar.
 
 ## Executar localmente
 
@@ -9,38 +9,21 @@ npm install
 npm run dev
 ```
 
-Abra http://localhost:3000. Para validar o build antes de publicar:
+Abra http://localhost:3000.
 
-```powershell
-npm run lint
-npm run build
-```
+## Personalizar antes de apresentar ou publicar
 
-## Antes de publicar
+- Atualize o nome, serviços, horários, equipe, imagens autorizadas e textos em `src/app/page.tsx` e `src/app/globals.css`.
+- Cadastre o WhatsApp em `NEXT_PUBLIC_CLINIC_WHATSAPP` usando apenas país + DDD + telefone, com dígitos.
+- Cadastre o e-mail público em `NEXT_PUBLIC_CLINIC_EMAIL` para exibi-lo no rodapé.
+- Cadastre o endereço em `NEXT_PUBLIC_CLINIC_MAPS_QUERY` para exibir o mapa.
+- Configure o formulário com `RESEND_API_KEY`, `CONTACT_TO_EMAIL` e `CONTACT_FROM_EMAIL`. Sem essas variáveis, ele informa que o envio está indisponível; nunca confirma uma mensagem que não foi enviada.
+- Não apresente serviços, qualificações, depoimentos ou dados de contato demonstrativos como reais. Use fotografias autorizadas.
 
-O projeto usa dados demonstrativos. Atualize o nome, endereço, telefone, e-mail, profissionais, registros profissionais, serviços, links sociais e textos em `src/app/page.tsx`. Substitua as imagens de referência por imagens autorizadas da clínica. Confirme o endereço do mapa e o número do WhatsApp.
+As variáveis ficam no arquivo `.env.local` durante o desenvolvimento local e no painel da hospedagem após publicar. Nunca coloque chaves secretas no código do navegador.
 
-O formulário valida os campos no navegador, mas ainda não envia mensagens. Conecte um serviço de recebimento e só então troque o aviso por uma confirmação de envio. Não publique dados fictícios como se fossem reais.
+## Publicar
 
-## Publicar na Netlify
+A configuração da Netlify está em `netlify.toml`; a hospedagem precisa executar `npm run build`. Configure as variáveis de ambiente no painel da hospedagem antes de publicar os contatos e o formulário personalizados.
 
-1. Crie um repositório vazio no GitHub pelo site, sem README, licença ou `.gitignore` adicionais.
-2. Configure `git config user.name` e `git config user.email` com seu nome e e-mail do GitHub.
-3. Na pasta do projeto, rode:
-
-```powershell
-git branch -M main
-git add .
-git commit -m "Clínica Vita Essencial"
-git remote add origin https://github.com/SEU-USUARIO/SEU-REPOSITORIO.git
-git push -u origin main
-```
-
-4. No painel da Netlify, escolha **Add new project → Import an existing project**, conecte o GitHub, selecione o repositório e publique.
-5. A Netlify detecta Next.js. O arquivo `netlify.toml` define `npm run build` e Node.js 22.
-
-Após conectar GitHub e Netlify, novos commits na branch principal podem disparar implantações automáticas. A conta e as permissões precisam ser configuradas pelo proprietário no navegador.
-
-## Observação
-
-Esta versão é o modelo Essencial. Não contém banco de dados, autenticação ou agendamento. O formulário não transmite dados pessoais até a configuração de um serviço de envio.
+Este é o modelo Essencial. Não inclui autenticação, banco de dados, painel administrativo ou agendamento online.

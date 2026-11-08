@@ -55,7 +55,7 @@ export async function POST(request: Request) {
     from: fromEmail,
     to: [toEmail],
     replyTo: parsed.data.email,
-    subject: `Contato pelo site da Clínica Vita — ${parsed.data.name}`,
+    subject: `Contato pelo site da Clínica Vita Estética — ${parsed.data.name}`,
     text: `Nome: ${parsed.data.name}\nE-mail: ${parsed.data.email}\n\nMensagem:\n${parsed.data.message}`,
   });
 
@@ -67,7 +67,7 @@ export async function POST(request: Request) {
         { status: 403 },
       );
     }
-    return NextResponse.json({ error: "Não foi possível enviar sua mensagem agora. Tente novamente ou use o WhatsApp." }, { status: 502 });
+    return NextResponse.json({ error: "Não foi possível enviar sua mensagem agora. Tente novamente mais tarde." }, { status: 502 });
   }
 
   recentSubmissions.set(clientKey, now);
